@@ -5,7 +5,8 @@ PROJECT_ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 TB_DIR      := $(PROJECT_ROOT)tb
 BUILD_DIR   := $(PROJECT_ROOT)build/check
 
-SOURCES := $(TB_DIR)/alu_sequence_item.sv \
+SOURCES := $(TB_DIR)/alu_interface.sv \
+           $(TB_DIR)/alu_sequence_item.sv \
            $(TB_DIR)/alu_sequencer.sv
 
 .PHONY: help check clean
@@ -13,12 +14,12 @@ SOURCES := $(TB_DIR)/alu_sequence_item.sv \
 
 help:
 	@echo "Available targets:"
-	@echo "  make check    Compile all current testbench sources"
+	@echo "  make check    Compile all testbench sources"
 	@echo "  make clean    Remove compile-check output"
 
 check: | $(BUILD_DIR)
 	cd "$(BUILD_DIR)" && $(XRUN) $(XRUN_FLAGS) $(SOURCES)
-	@echo "COMPILE PASS: all current testbench sources compiled successfully."
+	@echo "COMPILE PASS: all testbench sources compiled successfully."
 
 $(BUILD_DIR):
 	mkdir -p "$@"
