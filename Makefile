@@ -7,7 +7,9 @@ BUILD_DIR   := $(PROJECT_ROOT)build/check
 
 SOURCES := $(TB_DIR)/alu_interface.sv \
            $(TB_DIR)/alu_sequence_item.sv \
-           $(TB_DIR)/alu_sequencer.sv
+           $(TB_DIR)/alu_sequencer.sv \
+           $(TB_DIR)/alu_driver.sv \
+           $(TB_DIR)/alu_monitor.sv
 
 .PHONY: help check clean
 .DELETE_ON_ERROR:
