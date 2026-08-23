@@ -24,7 +24,3 @@ class alu_sequence_item extends uvm_sequence_item;
     super.new(name);
   endfunction
 endclass
-
-
-
-
