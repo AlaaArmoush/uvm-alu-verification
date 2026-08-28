@@ -84,9 +84,8 @@ class alu_scoreboard extends uvm_scoreboard;
 
     alu_rf(packet.A, packet.B, packet.opcode, expected_result, expected_error, result_defined);
 
-    mismatch = packet.error !== expected_error;
-
-    if (result_defined) mismatch |= packet.result !== expected_result;
+    mismatch = (packet.error !== expected_error) ||
+      (result_defined && (packet.result !== expected_result));
 
     if (mismatch) begin
       mismatch_count++;
