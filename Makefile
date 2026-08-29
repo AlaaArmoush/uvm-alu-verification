@@ -23,7 +23,10 @@ SOURCES := $(TB_DIR)/alu_interface.sv \
            $(TB_DIR)/alu_agent.sv \
 					 $(TB_DIR)/alu_scoreboard.sv \
 					 $(TB_DIR)/alu_coverage.sv \
-					 $(TB_DIR)/alu_environment.sv
+					 $(TB_DIR)/alu_environment.sv \
+           $(TB_DIR)/alu_base_test.sv \
+           $(TB_DIR)/alu_random_test.sv \
+           $(TB_DIR)/alu_regression_test.sv
 
 .PHONY: help check clean
 .DELETE_ON_ERROR:
