@@ -21,7 +21,8 @@ SOURCES := $(TB_DIR)/alu_interface.sv \
            $(TB_DIR)/alu_driver.sv \
            $(TB_DIR)/alu_monitor.sv \
            $(TB_DIR)/alu_agent.sv \
-					 $(TB_DIR)/alu_scoreboard.sv
+					 $(TB_DIR)/alu_scoreboard.sv \
+					 $(TB_DIR)/alu_coverage.sv
 
 .PHONY: help check clean
 .DELETE_ON_ERROR:
