@@ -14,6 +14,8 @@ class alu_regression_test extends alu_base_test;
   alu_overflow_sequence         overflow_sequence;
   alu_underflow_sequence        underflow_sequence;
 
+  string                        sequence_name;
+
   function new(string name = "alu_regression_test", uvm_component parent);
     super.new(name, parent);
   endfunction
@@ -32,19 +34,48 @@ class alu_regression_test extends alu_base_test;
     overflow_sequence = alu_overflow_sequence::type_id::create("overflow_sequence");
     underflow_sequence = alu_underflow_sequence::type_id::create("underflow_sequence");
 
-    random_sequence.start(environment.agent.sequencer);
-    add_sequence.start(environment.agent.sequencer);
-    sub_sequence.start(environment.agent.sequencer);
-    and_sequence.start(environment.agent.sequencer);
-    or_sequence.start(environment.agent.sequencer);
-    xor_sequence.start(environment.agent.sequencer);
-    undefined_opcode_sequence.start(environment.agent.sequencer);
-    overflow_sequence.start(environment.agent.sequencer);
-    underflow_sequence.start(environment.agent.sequencer);
+    if (!$value$plusargs("SEQ_NAME=%s", sequence_name)) sequence_name = "all";
+
+    `uvm_info(get_type_name(), $sformatf("Selected sequence: %s", sequence_name), UVM_LOW)
+
+    case (sequence_name)
+      "alu_random_sequence": random_sequence.start(environment.agent.sequencer);
+
+      "alu_add_sequence": add_sequence.start(environment.agent.sequencer);
+
+      "alu_sub_sequence": sub_sequence.start(environment.agent.sequencer);
+
+      "alu_and_sequence": and_sequence.start(environment.agent.sequencer);
+
+      "alu_or_sequence": or_sequence.start(environment.agent.sequencer);
+
+      "alu_xor_sequence": xor_sequence.start(environment.agent.sequencer);
+
+      "alu_undefined_opcode_sequence": undefined_opcode_sequence.start(environment.agent.sequencer);
+
+      "alu_overflow_sequence": overflow_sequence.start(environment.agent.sequencer);
+
+      "alu_underflow_sequence": underflow_sequence.start(environment.agent.sequencer);
+
+      "all": begin
+        random_sequence.start(environment.agent.sequencer);
+        add_sequence.start(environment.agent.sequencer);
+        sub_sequence.start(environment.agent.sequencer);
+        and_sequence.start(environment.agent.sequencer);
+        or_sequence.start(environment.agent.sequencer);
+        xor_sequence.start(environment.agent.sequencer);
+        undefined_opcode_sequence.start(environment.agent.sequencer);
+        overflow_sequence.start(environment.agent.sequencer);
+        underflow_sequence.start(environment.agent.sequencer);
+      end
+
+      default:
+      `uvm_fatal("INVALID_SEQ_NAME", $sformatf("Unknown sequence selected: %s", sequence_name))
+    endcase
 
     wait_for_last_response();
 
-    `uvm_info(get_type_name(), "Regression test stimulus completed", UVM_LOW)
+    `uvm_info(get_type_name(), $sformatf("Sequence completed: %s", sequence_name), UVM_LOW)
 
     phase.drop_objection(this);
   endtask : run_phase
