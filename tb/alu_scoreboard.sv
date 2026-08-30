@@ -33,6 +33,17 @@ class alu_scoreboard extends uvm_scoreboard;
     end
   endtask : run_phase
 
+  function automatic string operation_name(input logic [2:0] opcode);
+    case (opcode)
+      3'b000:  operation_name = "ADD";
+      3'b001:  operation_name = "SUB";
+      3'b010:  operation_name = "AND";
+      3'b011:  operation_name = "OR";
+      3'b100:  operation_name = "XOR";
+      default: operation_name = "INVALID";
+    endcase
+  endfunction : operation_name
+
   function automatic void alu_rf(input logic signed [31:0] A, input logic signed [31:0] B,
                                  input logic [2:0] opcode, output logic [31:0] expected_result,
                                  output logic expected_error, output bit result_defined);
@@ -68,33 +79,56 @@ class alu_scoreboard extends uvm_scoreboard;
   endfunction : alu_rf
 
   function void check_packet(alu_sequence_item packet);
-    logic [31:0] expected_result;
-    logic        expected_error;
-    bit          result_defined;
-    bit          mismatch;
+    logic  [31:0] expected_result;
+    logic         expected_error;
+    bit           result_defined;
+    bit           result_mismatch;
+    bit           error_mismatch;
+    string        failed_fields;
+    string        expected_result_text;
 
     checked_count++;
 
     if ($isunknown({packet.A, packet.B, packet.opcode})) begin
       mismatch_count++;
-      `uvm_error("SB_UNKNOWN_REQUEST", $sformatf("A=0x%08h B=0x%08h opcode=%03b", packet.A,
-                                                 packet.B, packet.opcode))
+
+      `uvm_error("SB_UNKNOWN_REQUEST",
+                 $sformatf({"Transaction %0d contains unknown request values\n",
+                            "Operation : %s (opcode %03b)\n", "A         : 0x%08h\n",
+                            "B         : 0x%08h"}, checked_count, operation_name(packet.opcode),
+                             packet.opcode, packet.A, packet.B))
+
       return;
     end
 
     alu_rf(packet.A, packet.B, packet.opcode, expected_result, expected_error, result_defined);
 
-    mismatch = (packet.error !== expected_error) ||
-      (result_defined && (packet.result !== expected_result));
+    result_mismatch = result_defined && (packet.result !== expected_result);
+    error_mismatch  = packet.error !== expected_error;
 
-    if (mismatch) begin
+    if (result_mismatch) failed_fields = "RESULT";
+
+    if (error_mismatch) begin
+      if (failed_fields.len() > 0) failed_fields = {failed_fields, ", ERROR"};
+      else failed_fields = "ERROR";
+    end
+
+    if (result_defined)
+      expected_result_text = $sformatf("%0d (0x%08h)", $signed(expected_result), expected_result);
+    else expected_result_text = "not checked: undefined by contract";
+
+    if (result_mismatch || error_mismatch) begin
       mismatch_count++;
-      `uvm_error(
-          "SB_MISMATCH",
-          $sformatf(
-              "opcode=%03b A=0x%08h B=0x%08h result_defined=%0b expected_result=0x%08h actual_result=0x%08h expected_error=%0b actual_error=%0b",
-              packet.opcode, packet.A, packet.B, result_defined, expected_result, packet.result,
-              expected_error, packet.error))
+
+      `uvm_error("SB_MISMATCH",
+                 $sformatf({"Transaction %0d FAILED\n", "Operation : %s (opcode %03b)\n",
+                            "A         : %0d (0x%08h)\n", "B         : %0d (0x%08h)\n",
+                            "Result    : expected=%s\n", "            actual  =%0d (0x%08h)\n",
+                            "Error     : expected=%0b actual=%0b\n", "Failed fields: %s"},
+                             checked_count, operation_name(packet.opcode), packet.opcode,
+                             $signed(packet.A), packet.A, $signed(packet.B), packet.B,
+                             expected_result_text, $signed(packet.result), packet.result,
+                             expected_error, packet.error, failed_fields))
     end
   endfunction : check_packet
 
